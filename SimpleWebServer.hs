@@ -4,8 +4,8 @@ import Control.Concurrent (forkFinally)
 import Text.Printf
 import Control.Monad
 
-talk :: Handle -> IO ()
-talk h = do
+talk :: Handle -> String -> IO ()
+talk h hostport = do
   hSetBuffering h LineBuffering
   loop
   where
@@ -14,7 +14,7 @@ talk h = do
       hPutStrLn h ("<html><body><h4>" ++
                    "Thank you for using the " ++
                    "Haskell simple web service." ++
-                   "</h4></body></html>")
+                   "</h4><p>You come from " ++ hostport ++ "</p></body></html>")
 
 main = withSocketsDo $ do
   sock <- listenOn (PortNumber (fromIntegral port))
@@ -22,7 +22,7 @@ main = withSocketsDo $ do
   forever $ do
     (handle, host, port) <- accept sock
     printf "Accepted connection from %s: %s\n" host (show port)
-    forkFinally (talk handle) (\_ -> hClose handle)
+    forkFinally (talk handle (host ++ ":" ++ (show port))) (\_ -> hClose handle)
 
 port :: Int
 port = 80
