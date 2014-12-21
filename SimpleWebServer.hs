@@ -3,6 +3,52 @@ import System.IO (hSetBuffering, hGetLine, hPutStrLn, BufferMode(..), Handle, hC
 import Control.Concurrent (forkFinally)
 import Text.Printf
 import Control.Monad
+import Data.List.Split (splitOn)
+
+
+readHTTPHeaders :: Handle -> IO String
+readHTTPHeaders h = do
+  requestLine <- hGetLine h
+  let requestList = splitOn " " requestLine
+  return (requestList !! 1)
+
+writeHTTPHeaders :: Handle -> IO ()
+writeHTTPHeaders h = do
+  hPutStrLn h ("HTTP/1.1 200 OK")
+  hPutStrLn h ("Server: 178.62.248.243")
+  hPutStrLn h ("Content-Type: text/html; charset=utf-8")
+  hPutStrLn h ("")
+
+write404HTTPHeaders :: Handle -> IO ()
+write404HTTPHeaders h = do
+  hPutStrLn h ("HTTP/1.1 404 Not Found")
+  hPutStrLn h ("Server: 178.62.248.243")
+  hPutStrLn h ("Content-Type: text/html; charset=utf-8")
+  hPutStrLn h ("")
+
+showPage :: String -> Handle -> IO()
+showPage "/" h = do
+  writeHTTPHeaders h
+  hPutStrLn h ("<html><body><h4>" ++
+                   "Thank you for using the " ++
+                   "Haskell simple web service." ++
+                   "</h4></body></html>")
+showPage "/about" h = do
+  writeHTTPHeaders h
+  hPutStrLn h ("<html><body><h4>" ++
+                   "Thank you for using the " ++
+                   "Haskell simple web service." ++
+                   "</h4><p>" ++
+                   "<a href=\"https://gist.github.com/dummer/5569f9b1802a3c98508f\">Source code</a>" ++
+                   "</p></body></html>")
+
+showPage _ h = do -- For all another pages
+  write404HTTPHeaders h
+  hPutStrLn h ("<html><body><h4>" ++
+                   "Thank you for using the " ++
+                   "Haskell simple web service. But.." ++
+                   "</h4><h2>404 Page not found. :(</h2></body></html>")
+
 
 talk :: Handle -> String -> IO ()
 talk h hostport = do
@@ -10,18 +56,15 @@ talk h hostport = do
   loop
   where
     loop = do
-      line <- hGetLine h
-      hPutStrLn h ("<html><body><h4>" ++
-                   "Thank you for using the " ++
-                   "Haskell simple web service." ++
-                   "</h4><p>You come from " ++ hostport ++ "</p></body></html>")
+      requestUrl <- readHTTPHeaders h
+      showPage requestUrl h
 
 main = withSocketsDo $ do
   sock <- listenOn (PortNumber (fromIntegral port))
   printf "Listening on port %d\n" port
   forever $ do
     (handle, host, port) <- accept sock
-    printf "Accepted connection from %s: %s\n" host (show port)
+    --printf "Accepted connection from %s: %s\n" host (show port)
     forkFinally (talk handle (host ++ ":" ++ (show port))) (\_ -> hClose handle)
 
 port :: Int
