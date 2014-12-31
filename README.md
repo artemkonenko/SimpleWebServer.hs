@@ -1,7 +1,9 @@
 SimpleWebServer.hs
 ==================
 
-Multithreaded simple web server. With hardcoded pages, yet.
+Multithreaded simple web server. With hardcoded pages and ip in response http header, yet.
+
+[![Build Status](https://travis-ci.org/dummer/SimpleWebServer.hs.svg?branch=master)](https://travis-ci.org/dummer/SimpleWebServer.hs)
 
 Building and running
 ====================
