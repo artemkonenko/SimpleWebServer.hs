@@ -32,14 +32,16 @@ showPage "/" h = do
   hPutStrLn h ("<html><body><h4>" ++
                    "Thank you for using the " ++
                    "Haskell simple web service." ++
-                   "</h4></body></html>")
+                   "</h4>" ++
+                   "<ul><li><a href=\"/about\">About server</a></li></ul>" ++
+                   "</body></html>")
 showPage "/about" h = do
   writeHTTPHeaders h
   hPutStrLn h ("<html><body><h4>" ++
                    "Thank you for using the " ++
                    "Haskell simple web service." ++
                    "</h4><p>" ++
-                   "<a href=\"https://gist.github.com/dummer/5569f9b1802a3c98508f\">Source code</a>" ++
+                   "<a href=\"https://github.com/dummer/SimpleWebServer.hs\">Source code</a>" ++
                    "</p></body></html>")
 
 showPage _ h = do -- For all another pages
