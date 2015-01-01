@@ -26,6 +26,12 @@ write404HTTPHeaders h = do
   hPutStrLn h ("Content-Type: text/html; charset=utf-8")
   hPutStrLn h ("")
 
+links :: String
+links = "<ul>"
+      ++ "<li><a href=\"/about\">About server</a></li>"
+      ++ "<li><a href=\"https://github.com/dummer/SimpleWebServer.hs\">Source code</a></li>"
+      ++ "</ul>"
+
 showPage :: String -> Handle -> IO()
 showPage "/" h = do
   writeHTTPHeaders h
@@ -33,16 +39,16 @@ showPage "/" h = do
                    "Thank you for using the " ++
                    "Haskell simple web service." ++
                    "</h4>" ++
-                   "<ul><li><a href=\"/about\">About server</a></li></ul>" ++
+                   links ++
                    "</body></html>")
 showPage "/about" h = do
   writeHTTPHeaders h
   hPutStrLn h ("<html><body><h4>" ++
                    "Thank you for using the " ++
                    "Haskell simple web service." ++
-                   "</h4><p>" ++
-                   "<a href=\"https://github.com/dummer/SimpleWebServer.hs\">Source code</a>" ++
-                   "</p></body></html>")
+                   "</h4>" ++
+                   links ++
+                   "</body></html>")
 
 showPage _ h = do -- For all another pages
   write404HTTPHeaders h
