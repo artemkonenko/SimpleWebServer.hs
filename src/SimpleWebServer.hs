@@ -3,8 +3,8 @@ import System.IO (hSetBuffering, hGetLine, hPutStrLn, BufferMode(..), Handle, hC
 import Control.Concurrent (forkFinally)
 import Text.Printf
 import Control.Monad
+import System.IO.Error
 import Data.List.Split (splitOn)
-
 
 readHTTPHeaders :: Handle -> IO String
 readHTTPHeaders h = do
@@ -28,7 +28,9 @@ write404HTTPHeaders h = do
 
 links :: String
 links = "<ul>"
-      ++ "<li><a href=\"/about\">About server</a></li>"
+      ++ "<li><A href=\"/\">Home page</a></li>"
+      ++ "<li><a href=\"/testpage/about\">About server</a></li>"
+      ++ "<li><A href=\"/testpage/staticpage.html\">Test static page</a></li>"
       ++ "<li><a href=\"https://github.com/dummer/SimpleWebServer.hs\">Source code</a></li>"
       ++ "</ul>"
 
@@ -41,21 +43,19 @@ showPage "/" h = do
                    "</h4>" ++
                    links ++
                    "</body></html>")
-showPage "/about" h = do
-  writeHTTPHeaders h
-  hPutStrLn h ("<html><body><h4>" ++
-                   "Thank you for using the " ++
-                   "Haskell simple web service." ++
-                   "</h4>" ++
-                   links ++
-                   "</body></html>")
 
-showPage _ h = do -- For all another pages
+showPage "/404" h = do 
   write404HTTPHeaders h
   hPutStrLn h ("<html><body><h4>" ++
                    "Thank you for using the " ++
                    "Haskell simple web service. But.." ++
                    "</h4><h2>404 Page not found. :(</h2></body></html>")
+
+showPage (s:url) h =  do -- For all another pages
+                        page <- tryIOError $ readFile url
+                        case page of
+                          Left _ -> showPage "/404" h
+                          Right content -> writeHTTPHeaders h >> hPutStrLn h content
 
 
 talk :: Handle -> String -> IO ()

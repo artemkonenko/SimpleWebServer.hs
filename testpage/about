@@ -1,0 +1,14 @@
+<html>
+<head>
+<title>Test static page</title>
+</head>
+<body>
+<h4>About page. Yep, blank page about this SimpleHaskellServer</h4>
+<ul>
+	<li><A href="/">Home page</a></li>
+	<li><a href="/testpage/about">About server</a></li>
+	<li><A href="/testpage/staticpage.html">Test static page</a></li>
+	<li><a href="https://github.com/dummer/SimpleWebServer.hs">Source code</a></li>
+</ul>
+</body>
+</html>
