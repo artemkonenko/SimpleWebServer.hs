@@ -1,10 +1,13 @@
+import Control.Concurrent (forkFinally)
+import Control.Monad
+import Control.Monad.Error
+import Data.ConfigFile (readfile, emptyCP, get)
+import Data.Either.Utils
+import Data.List.Split (splitOn)
 import Network (listenOn, withSocketsDo, accept, PortID(..))
 import System.IO (hSetBuffering, hGetLine, hPutStrLn, BufferMode(..), Handle, hClose)
-import Control.Concurrent (forkFinally)
-import Text.Printf
-import Control.Monad
 import System.IO.Error
-import Data.List.Split (splitOn)
+import Text.Printf
 
 readHTTPHeaders :: Handle -> IO String
 readHTTPHeaders h = do
@@ -26,23 +29,8 @@ write404HTTPHeaders h = do
   hPutStrLn h ("Content-Type: text/html; charset=utf-8")
   hPutStrLn h ("")
 
-links :: String
-links = "<ul>"
-      ++ "<li><A href=\"/\">Home page</a></li>"
-      ++ "<li><a href=\"/testpage/about\">About server</a></li>"
-      ++ "<li><A href=\"/testpage/staticpage.html\">Test static page</a></li>"
-      ++ "<li><a href=\"https://github.com/dummer/SimpleWebServer.hs\">Source code</a></li>"
-      ++ "</ul>"
-
 showPage :: String -> Handle -> IO()
-showPage "/" h = do
-  writeHTTPHeaders h
-  hPutStrLn h ("<html><body><h4>" ++
-                   "Thank you for using the " ++
-                   "Haskell simple web service." ++
-                   "</h4>" ++
-                   links ++
-                   "</body></html>")
+showPage "/" h = showPage "/index.html" h
 
 showPage "/404" h = do 
   write404HTTPHeaders h
@@ -68,12 +56,14 @@ talk h hostport = do
       showPage requestUrl h
 
 main = withSocketsDo $ do
-  sock <- listenOn (PortNumber (fromIntegral port))
-  printf "Listening on port %d\n" port
+  {-rv <- runErrorT $ do
+    cp <- join $ liftIO $ readfile emptyCP "config.cfg"
+    serverport <- liftIO $ read $ get cp "DEFAULT" "port"-}
+  let serverport = 8080 :: Int
+
+  sock <- listenOn (PortNumber (fromIntegral serverport))
+  printf "Listening on port %d\n" serverport
   forever $ do
     (handle, host, port) <- accept sock
     --printf "Accepted connection from %s: %s\n" host (show port)
     forkFinally (talk handle (host ++ ":" ++ (show port))) (\_ -> hClose handle)
-
-port :: Int
-port = 80
